@@ -1,16 +1,43 @@
-# my_app
+Project Handover: Flutter Dictionary App
+1. Current Progress (The "Skeleton")
 
-A new Flutter project.
+We have successfully transitioned the Figma UI into a functional Flutter prototype. The app uses Feature-First Architecture and Named Routes.
 
-## Getting Started
+Completed UI Screens:
 
-This project is a starting point for a Flutter application.
+    Home Screen: Dashboard with greeting, search placeholder, summary card, and a 2×2 Game Hub grid.
 
-A few resources to get you started if this is your first Flutter project:
+    Dictionary List: Scrollable list of saved words with phonetic spelling and short definitions.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+    Word Detail: Dedicated word view with a blue header, audio icon, and example sentence tiles.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+    Add New Word: Form with input fields and a "Lookup" button UI.
+
+    Stats Screen: Dashboard with a 2×2 stat grid and a bar chart for performance.
+
+    Game Hub: UI layouts for Quiz, Fill the Gap, Matching, and Dictation games.
+
+2. Current File Structure
+lib/
+├── core/
+│   ├── models/        # Contains word_model.dart (The data blueprint)
+│   └── network/       # (Pending) API logic
+├── features/          # Feature-first UI folders
+│   ├── home/          # home_screen.dart
+│   ├── dictionary/    # dictionary_screen.dart, word_detail_screen.dart
+│   ├── search/        # add_word_screen.dart
+│   ├── stats/         # stats_screen.dart
+│   └── games/         # quiz, fill_gap, matching, dictation screens
+└── main.dart          # Theme and Navigation Routes
+
+3. Immediate Next Steps (The "Brain")
+
+The UI is currently hardcoded with mock data. The next development goals are:
+
+    API Integration: Connect AddWordScreen to the Free Dictionary API using the http package.
+
+    State Management: Implement Provider or Riverpod to update the UI (like word counts) across different screens.
+
+    Local Storage: Set up Hive or SQFlite to save words permanently on the device.
+
+    Dynamic Games: Update game logic to pull random words from the user's actual saved dictionary.
