@@ -5,7 +5,9 @@ class GameLayout extends StatelessWidget {
   final String prompt;
   final Widget questionContent;
   final Widget answerArea;
-  final VoidCallback onSubmit;
+  final VoidCallback? onSubmit;
+  final String? hint;
+  final String buttonLabel;
 
   const GameLayout({
     super.key,
@@ -14,62 +16,68 @@ class GameLayout extends StatelessWidget {
     required this.questionContent,
     required this.answerArea,
     required this.onSubmit,
+    this.hint,
+    this.buttonLabel = "Submit Answer",
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F6FF), // Light blue background from your screenshot
+      // Η κρίσιμη ρύθμιση: Το UI δεν μικραίνει όταν βγαίνει το πληκτρολόγιο
+      resizeToAvoidBottomInset: false, 
+      backgroundColor: const Color(0xFFF0F6FF),
       appBar: AppBar(
-        title: Text(title, style: const TextStyle(fontFamily: 'Serif')),
+        title: Text(title, style: const TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
         child: Column(
           children: [
-            // Question Card
+            // Κάρτα Ερώτησης
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: const Color(0xFF3B82F6), width: 1.5),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [BoxShadow(color: Colors.blue.withOpacity(0.05), blurRadius: 10)],
+                border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.3), width: 1.5),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(prompt, style: const TextStyle(color: Color(0xFF1A41CC), fontSize: 14)),
-                  const SizedBox(height: 12),
+                  Text(prompt, style: const TextStyle(color: Color(0xFF1A41CC), fontSize: 13, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
                   questionContent,
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             
-            // Hint Section (Dynamic for each game)
-            _buildHintBox(),
-            const SizedBox(height: 24),
+            if (hint != null) _buildHintBox(hint!),
+            
+            const SizedBox(height: 20),
 
-            // Answer Area
+            // Περιοχή Απαντήσεων
             Expanded(child: answerArea),
 
-            // Action Buttons
+            // Σταθερό Κουμπί στο κάτω μέρος
             ElevatedButton(
               onPressed: onSubmit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF90A4E4),
+                backgroundColor: const Color(0xFF1A41CC),
+                foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 56),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 2,
               ),
-              child: const Text("Submit Answer", style: TextStyle(color: Colors.white)),
-            ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: () {},
-              child: const Text("Reset", style: TextStyle(color: Colors.grey)),
+              child: Text(
+                buttonLabel,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -77,23 +85,16 @@ class GameLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildHintBox() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Hint - Definition:", style: TextStyle(fontSize: 12, color: Colors.black54)),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE8EFFF)),
-          ),
-          child: const Text("Press Down for the Hint to Appear", style: TextStyle(color: Colors.grey)),
-        ),
-      ],
+  Widget _buildHintBox(String text) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue.withOpacity(0.1)),
+      ),
+      child: Text("Hint: $text", style: const TextStyle(color: Colors.black87, fontSize: 14, fontStyle: FontStyle.italic)),
     );
   }
 }

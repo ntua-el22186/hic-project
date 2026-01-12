@@ -1,27 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart'; // 1. Import το TTS
 import '../../core/models/word_model.dart';
 
-class WordDetailScreen extends StatelessWidget {
+class WordDetailScreen extends StatefulWidget {
   const WordDetailScreen({super.key});
 
   @override
+  State<WordDetailScreen> createState() => _WordDetailScreenState();
+}
+
+class _WordDetailScreenState extends State<WordDetailScreen> {
+  // 2. Δημιουργία του αντικειμένου TTS
+  final FlutterTts flutterTts = FlutterTts();
+
+  // 3. Συνάρτηση για την ομιλία
+  Future<void> _speak(String text) async {
+    await flutterTts.setLanguage("en-US"); // Ρύθμιση στα Αγγλικά
+    await flutterTts.setPitch(1.0);        // Τόνος φωνής
+    await flutterTts.speak(text);          // Εκκίνηση ομιλίας
+  }
+
+  void _deleteWord(WordModel item) async {
+    final bool? confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Word?"),
+        content: Text("Are you sure you want to remove '${item.word}'?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Delete", style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await item.delete();
+      if (mounted) Navigator.pop(context);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // This line grabs the Word data passed from the list page
     final wordItem = ModalRoute.of(context)!.settings.arguments as WordModel;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Details", style: TextStyle(fontFamily: 'Serif')),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            onPressed: () => _deleteWord(wordItem),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Blue Word Header Card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(32),
@@ -29,42 +66,56 @@ class WordDetailScreen extends StatelessWidget {
                 color: const Color(0xFF1A41CC),
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(wordItem.word, style: const TextStyle(color: Colors.white, fontSize: 36, fontFamily: 'Serif', fontWeight: FontWeight.bold)),
-                      Text(wordItem.phonetic, style: const TextStyle(color: Colors.white70, fontSize: 18)),
+                      Expanded(
+                        child: Text(
+                          wordItem.word, 
+                          style: const TextStyle(color: Colors.white, fontSize: 32, fontFamily: 'Serif', fontWeight: FontWeight.bold)
+                        ),
+                      ),
+                      // 4. Σύνδεση του κουμπιού με τη συνάρτηση _speak
+                      GestureDetector(
+                        onTap: () => _speak(wordItem.word),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white.withOpacity(0.2),
+                          child: const Icon(Icons.volume_up, color: Colors.white),
+                        ),
+                      )
                     ],
                   ),
-                  CircleAvatar(
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                    child: const Icon(Icons.volume_up, color: Colors.white),
-                  )
+                  if (wordItem.phonetic.isNotEmpty)
+                    Text(wordItem.phonetic, style: const TextStyle(color: Colors.white70, fontSize: 18)),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // 2. Definition Section
             _buildSectionCard("DEFINITION", Text(wordItem.definition)),
             const SizedBox(height: 16),
 
-            // 3. Examples Section
-            _buildSectionCard(
-              "EXAMPLES",
-              Column(
-                children: wordItem.examples.map((ex) => _buildExampleTile(ex)).toList(),
+            if (wordItem.examples.isNotEmpty && wordItem.examples.first.isNotEmpty)
+              _buildSectionCard(
+                "EXAMPLES",
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: wordItem.examples.map((ex) => _buildExampleTile(ex)).toList(),
+                ),
               ),
-            ),
             const SizedBox(height: 16),
 
-            // 4. Personal Notes Section
             _buildSectionCard(
               "MY NOTES",
-              const Text("Add notes here...", style: TextStyle(color: Colors.orange)),
+              Text(
+                (wordItem.personalNote == null || wordItem.personalNote!.isEmpty) 
+                    ? "No notes added yet." 
+                    : wordItem.personalNote!,
+                style: TextStyle(color: (wordItem.personalNote == null) ? Colors.grey : Colors.black87),
+              ),
               borderColor: Colors.orange.shade200,
               icon: Icons.edit_outlined,
             ),
@@ -101,7 +152,9 @@ class WordDetailScreen extends StatelessWidget {
   }
 
   Widget _buildExampleTile(String text) {
+    if (text.isEmpty) return const SizedBox();
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

@@ -1,17 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-// Import all your features
-import 'package:my_app/features/home/home_screen.dart';
-import 'package:my_app/features/dictionary/dictionary_screen.dart';
-import 'package:my_app/features/dictionary/word_detail_screen.dart';
-import 'package:my_app/features/search/add_word_screen.dart';
-import 'package:my_app/features/stats/stats_screen.dart';
-import 'package:my_app/features/games/dictation_screen.dart';
-import 'package:my_app/features/games/matching_screen.dart'; // We will create this next
-import 'package:my_app/features/games/quiz_screen.dart';
-import 'package:my_app/features/games/fill_gap_screen.dart';
+// Import Models
+import 'core/models/word_model.dart';
 
-void main() => runApp(const DictionaryApp());
+// Import Screens
+import 'package:dicapp/features/auth/login_screen.dart';
+import 'package:dicapp/features/auth/signup_screen.dart';
+import 'package:dicapp/features/home/home_screen.dart';
+import 'package:dicapp/features/dictionary/dictionary_screen.dart';
+import 'package:dicapp/features/dictionary/word_detail_screen.dart';
+import 'package:dicapp/features/search/add_word_screen.dart';
+import 'package:dicapp/features/stats/stats_screen.dart';
+import 'package:dicapp/features/games/dictation_screen.dart';
+import 'package:dicapp/features/games/matching_screen.dart';
+import 'package:dicapp/features/games/quiz_screen.dart';
+import 'package:dicapp/features/games/fill_gap_screen.dart';
+
+void main() async {
+  // 1. Βεβαιωνόμαστε ότι τα Flutter bindings είναι έτοιμα (απαραίτητο για το async)
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 2. Αρχικοποίηση Hive για Flutter
+  await Hive.initFlutter();
+  
+  // 3. Καταχώρηση του WordModelAdapter (αυτό που έφτιαξε το build_runner)
+  Hive.registerAdapter(WordModelAdapter());
+  
+  // 4. Άνοιγμα του Box "words_box" - Εδώ θα μένουν μόνιμα οι λέξεις
+  await Hive.openBox<WordModel>('words_box');
+
+  // 5. Εκκίνηση της εφαρμογής
+  runApp(const DictionaryApp());
+}
 
 class DictionaryApp extends StatelessWidget {
   const DictionaryApp({super.key});
@@ -26,7 +47,6 @@ class DictionaryApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF8FAFF),
         primaryColor: const Color(0xFF1A41CC),
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1A41CC)),
-        // Setup for the Serif look in your Figma titles
         textTheme: const TextTheme(
           displayMedium: TextStyle(fontFamily: 'Serif', color: Color(0xFF1A41CC), fontWeight: FontWeight.bold),
           titleLarge: TextStyle(fontFamily: 'Serif', fontSize: 22, fontWeight: FontWeight.bold),
@@ -34,7 +54,9 @@ class DictionaryApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const HomeScreen(),
+        '/': (context) => const LoginScreen(),
+        '/signup': (context) => const SignUpScreen(),
+        '/home' : (context) => const HomeScreen(),
         '/dictionary': (context) => const DictionaryScreen(),
         '/word-detail': (context) => const WordDetailScreen(),
         '/add-word': (context) => const AddWordScreen(),
